@@ -1,80 +1,45 @@
-% Plot points on geographic world map
+% Plot points on geographic world map using geobubble
+function plotLocations(locationFile,colorVariable,sizeVariable)
 
-%% Define locations and associated text labels
+    % Input handling
+    narginchk(1,3)
 
-% Read in location data from Excel file
-locations = readtable("Locations.xlsx");
+    % Check that the input arguments are the right class and valid
+    arguments
+        locationFile (1,:) string {mustBeFile}
+        colorVariable (1,:) string {mustBeValidVariableName} = ""
+        sizeVariable (1,:) string {mustBeValidVariableName} = ""
+    end
 
-locations.Type = categorical(locations.Type);
-locations.Name = categorical(locations.Name);
+    % Call function to read in table data of locations
+    locationTable = readLocationFile(locationFile);
 
+    % If color variable is specified
+    if ~isempty(colorVariable)
+        % In order to color plotted locations by specified colorVariable, must convert to categorical
+        locationTable.(colorVariable) = categorical(locations.(colorVariable));
+    end
 
-%% Read in AMDR work locations
-% Read in location data from Excel file
-locations = readtable("Location_AMDR.xlsx");
+    % Call geobubble plotting function
+    gb = geobubble(locationTable,"Latitude","Longitude"
 
-locations.Facility = categorical(locations.Facility);
+    % If colorVariable is available, update plot
+    if ~isempty(colorVariable)
+        gb.ColorVariable=colorVariable;
+    end
 
+    % If sizeVariable is available, update plot
+    if ~isempty(sizeVariable)
+        gb.SizeVariable=sizeVariable;
+    end
+    
+    % Change geobasemap to "grayland" for best visual results
+    geobasemap grayland
+    
+    % Maximize the map in the figure
+    gb.MapLayout="maximized";
+    
+    % Increase font size for better visibility
+    set(gca,'fontsize',12)
 
-%% Plot AMDR facilities
-
-gb1 = geobubble(locations,"Latitude","Longitude",...
-    ColorVariable="Facility");
-geobasemap grayland
-gb1.MapLayout="maximized";
-set(gca,'fontsize',12)
-
-%% Plot home locations on map 
-
-figure;
-gb2 = geobubble(locations(locations.Type=="Home",:),"Latitude","Longitude",SizeVariable="TimeSpent");
-
-%% Plot work locations on map
-
-workLocations = locations(locations.Type=="Work"&locations.Company=="RTX",:);
-gb3 = geobubble(workLocations,...
-    "Latitude","Longitude",...
-    SizeVariable="TimeSpent",...
-    ColorVariable="Name",...
-    MapLayout="maximized");
-
-
-%% Plot both home and work locations on map and color code them
-
-gb4 = geobubble(locations,"Latitude","Longitude",SizeVariable="TimeSpent",ColorVariable="Type");
-
-% Plot the locations
-% geoplot([placesLived{:,1}],...
-%     [placesLived{:,2}],...
-%     'MarkerEdgeColor','blue',...
-%     'linestyle','none',...
-%     'Marker','o');
-
-% Use the "topographic" basemap since we're plotting city locations
-% geobasemap topographic
-
-% Add text labels to each location
-% text(placesLived{:,1},...
-%     placesLived{:,2},...
-%     placesLived(:,3),...
-%     'color','b')
-
-% Set the limits manually
-%geolimits([42.2502 42.4351],[-71.2670 -70.9525])
-
-%% Clean up plot for presentation
-
-
-% Set the limits dynamically
-% tightnessFactor = 0.1;
-% latExtent = max([placesLived{:,1}]) - min([placesLived{:,1}]);
-% latLimits = [min([placesLived{:,1}])-tightnessFactor*latExtent ...
-%     max([placesLived{:,1}])+tightnessFactor*latExtent];
-% 
-% longExtent = max([placesLived{:,2}]) - min([placesLived{:,2}]);
-% longLimits = [min([placesLived{:,2}])-tightnessFactor*longExtent ...
-%     max([placesLived{:,2}])+tightnessFactor*longExtent];
-% 
-% 
-% geolimits(latLimits,longLimits);
-
+end
