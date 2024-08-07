@@ -51,7 +51,10 @@ function [vargout] = plotLocations(locationFile,colorVariable,sizeVariable)
     end
 
     %% Plot locations
-
+    
+    % Call new figure
+    figure;
+    
     % Call geobubble plotting function
     gb = geobubble(locationTable,"Latitude","Longitude");
 
